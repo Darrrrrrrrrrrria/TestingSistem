@@ -1,0 +1,274 @@
+﻿@page "/students"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<h3>Список студентов</h3>
+
+<!-- Кнопки для действий -->
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="OpenAddStudentModal">Добавить студента</button>
+    <button class="btn btn-warning" @onclick="OpenEditStudentModal" disabled="@(SelectedStudent == null)">Редактировать данные</button>
+    <button class="btn btn-danger" @onclick="DeleteStudent" disabled="@(SelectedStudent == null)">Удалить студента</button>
+    <button class="btn btn-info" @onclick="OpenJournalModal">Просмотреть журнал</button>
+</div>
+
+<!-- Таблица студентов -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>ФИО</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in studentsList)
+        {
+            <tr @onclick="() => SelectStudent(student)" @ondblclick="() => OpenStudentDetailsModal(student)" style="cursor: pointer;">
+                <td>@student.FullName</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Кнопка "Назад" -->
+<button class="btn btn-secondary" @onclick="NavigateToAdminMain">Назад</button>
+
+<!-- Модальное окно для добавления студента -->
+@if (showAddStudentModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавить студента</h5>
+                    <button type="button" class="close" @onclick="CloseAddStudentModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@newStudent" OnValidSubmit="AddStudent">
+                        <DataAnnotationsValidator />
+                        <div class="form-group">
+                            <label>ФИО:</label>
+                            <InputText class="form-control" @bind-Value="newStudent.FullName" />
+                        </div>
+                        <div class="form-group">
+                            <label>Логин:</label>
+                            <InputText class="form-control" @bind-Value="newStudent.Login" />
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль:</label>
+                            <InputText type="password" class="form-control" @bind-Value="newStudent.Password" />
+                        </div>
+                        <div class="form-group">
+                            <label>Дата рождения:</label>
+                            <InputDate class="form-control" @bind-Value="newStudent.BirthDate" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                        <button type="button" class="btn btn-secondary" @onclick="CloseAddStudentModal">Отмена</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для редактирования студента -->
+@if (showEditStudentModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактировать данные студента</h5>
+                    <button type="button" class="close" @onclick="CloseEditStudentModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@SelectedStudent" OnValidSubmit="SaveEditedStudent">
+                        <DataAnnotationsValidator />
+                        <div class="form-group">
+                            <label>ФИО:</label>
+                            <InputText class="form-control" @bind-Value="SelectedStudent.FullName" />
+                        </div>
+                        <div class="form-group">
+                            <label>Логин:</label>
+                            <InputText class="form-control" @bind-Value="SelectedStudent.Login" />
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль:</label>
+                            <InputText type="password" class="form-control" @bind-Value="SelectedStudent.Password" />
+                        </div>
+                        <div class="form-group">
+                            <label>Дата рождения:</label>
+                            <InputDate class="form-control" @bind-Value="SelectedStudent.BirthDate" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                        <button type="button" class="btn btn-secondary" @onclick="CloseEditStudentModal">Отмена</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для просмотра информации о студенте -->
+@if (showStudentDetailsModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Информация о студенте</h5>
+                    <button type="button" class="close" @onclick="CloseStudentDetailsModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>ФИО:</strong> @SelectedStudent.FullName</p>
+                    <p><strong>Логин:</strong> @SelectedStudent.Login</p>
+                    <p><strong>Пароль:</strong> @SelectedStudent.Password</p>
+                    <p><strong>Дата рождения:</strong> @SelectedStudent.BirthDate.ToShortDateString()</p>
+                    <p><strong>Оценки:</strong></p>
+                    <ul>
+                        @foreach (var grade in SelectedStudent.Grades)
+                        {
+                            <li>@grade</li>
+                        }
+                    </ul>
+                    <p><strong>Прохождение курса:</strong> @SelectedStudent.CourseProgress%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для журнала -->
+@if (showJournalModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Журнал успеваемости</h5>
+                    <button type="button" class="close" @onclick="CloseJournalModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Фильтровать по:</label>
+                        <select class="form-control" @bind="FilterType">
+                            <option value="performance">Успеваемость</option>
+                            <option value="testsPassed">Количество пройденных тестов</option>
+                            <option value="lastName">Фамилия</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Порядок сортировки:</label>
+                        <select class="form-control" @bind="SortOrder">
+                            <option value="asc">По возрастанию</option>
+                            <option value="desc">По убыванию</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @onclick="ApplyFilters">Применить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<StudentModel> studentsList = new List<StudentModel>
+    {
+        new StudentModel { FullName = "Иванов Иван", Login = "ivanov", Password = "12345", BirthDate = new DateTime(2000, 1, 1), Grades = new List<int> { 5, 4, 3 }, CourseProgress = 75 },
+        new StudentModel { FullName = "Петров Петр", Login = "petrov", Password = "54321", BirthDate = new DateTime(2001, 2, 2), Grades = new List<int> { 4, 4, 5 }, CourseProgress = 90 },
+        new StudentModel { FullName = "Сидорова Анна", Login = "sidorova", Password = "qwerty", BirthDate = new DateTime(1999, 3, 3), Grades = new List<int> { 3, 4, 5 }, CourseProgress = 60 }
+    };
+
+    private StudentModel SelectedStudent { get; set; }
+    private StudentModel newStudent = new StudentModel();
+    private bool showAddStudentModal = false;
+    private bool showEditStudentModal = false;
+    private bool showStudentDetailsModal = false;
+    private bool showJournalModal = false;
+    private string FilterType = "performance";
+    private string SortOrder = "asc";
+
+    private void SelectStudent(StudentModel student)
+    {
+        SelectedStudent = student;
+    }
+
+    private void OpenAddStudentModal()
+    {
+        showAddStudentModal = true;
+    }
+
+    private void CloseAddStudentModal()
+    {
+        showAddStudentModal = false;
+        newStudent = new StudentModel();
+    }
+
+    private void AddStudent()
+    {
+        studentsList.Add(newStudent);
+        CloseAddStudentModal();
+    }
+
+    private void OpenEditStudentModal()
+    {
+        showEditStudentModal = true;
+    }
+
+    private void CloseEditStudentModal()
+    {
+        showEditStudentModal = false;
+    }
+
+    private void SaveEditedStudent()
+    {
+        CloseEditStudentModal();
+    }
+
+    private void DeleteStudent()
+    {
+        studentsList.Remove(SelectedStudent);
+        SelectedStudent = null;
+    }
+
+    private void OpenStudentDetailsModal(StudentModel student)
+    {
+        SelectedStudent = student;
+        showStudentDetailsModal = true;
+    }
+
+    private void CloseStudentDetailsModal()
+    {
+        showStudentDetailsModal = false;
+    }
+
+    private void OpenJournalModal()
+    {
+        showJournalModal = true;
+    }
+
+    private void CloseJournalModal()
+    {
+        showJournalModal = false;
+    }
+
+    private void ApplyFilters()
+    {
+        // Логика фильтрации и сортировки
+        CloseJournalModal();
+    }
+
+    private void NavigateToAdminMain()
+    {
+        Navigation.NavigateTo("/admin_main");
+    }
+
+    public class StudentModel
+    {
+        public string FullName { get; set; }
+        public string Login { get; set; }
+        public string Password { get; set; }
+        public DateTime BirthDate { get; set; }
+        public List<int> Grades { get; set; } = new List<int>();
+        public int CourseProgress { get; set; }
+    }
+}

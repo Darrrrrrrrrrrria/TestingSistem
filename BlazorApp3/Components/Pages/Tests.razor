@@ -1,0 +1,363 @@
+﻿@page "/tests"
+@rendermode InteractiveServer
+@using BlazorApp3.Models
+@inject NavigationManager Navigation
+
+<h3>Управление тестами</h3>
+
+<!-- Кнопки для действий -->
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="OpenAddTestModal">Добавить тест</button>
+    <button class="btn btn-warning" @onclick="OpenEditTestModal" disabled="@(SelectedTest == null)">Изменить тест</button>
+    <button class="btn btn-danger" @onclick="OpenDeleteTestModal" disabled="@(SelectedTest == null)">Удалить тест</button>
+</div>
+
+<!-- Таблица тестов -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Название теста</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var test in testsList)
+        {
+            <tr @onclick="() => SelectTest(test)" 
+                @ondblclick="() => OpenTestDetailsModal(test)" 
+                style="cursor: pointer; @(SelectedTest == test ? "background-color: #f0f0f0; font-weight: bold;" : "")">
+                <td>@test.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Модальное окно для добавления теста -->
+@if (showAddTestModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавить тест</h5>
+                    <button type="button" class="close" @onclick="CloseAddTestModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Название теста:</label>
+                        <InputText class="form-control" @bind-Value="newTest.Name" />
+                    </div>
+                    <button class="btn btn-primary" @onclick="AddTest">Добавить</button>
+                    <button class="btn btn-secondary" @onclick="CloseAddTestModal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для удаления теста -->
+@if (showDeleteTestModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Удалить тест</h5>
+                    <button type="button" class="close" @onclick="CloseDeleteTestModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить тест "@SelectedTest.Name"?</p>
+                    <button class="btn btn-danger" @onclick="DeleteTest">Удалить</button>
+                    <button class="btn btn-secondary" @onclick="CloseDeleteTestModal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для просмотра информации о тесте -->
+@if (showTestDetailsModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-lg" style="max-width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Информация о тесте: @SelectedTest.Name</h5>
+                    <button type="button" class="close" @onclick="CloseTestDetailsModal">&times;</button>
+                </div>
+                <div class="modal-body" style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Вопрос</th>
+                                <th>Вариант 1</th>
+                                <th>Вариант 2</th>
+                                <th>Вариант 3</th>
+                                <th>Вариант 4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var question in SelectedTest.Questions)
+                            {
+                                <tr>
+                                    <td>@(SelectedTest.Questions.IndexOf(question) + 1)</td>
+                                    <td>@question.QuestionText</td>
+                                    @for (int i = 0; i < question.Options.Count; i++)
+                                    {
+                                        <td style="@(i == question.CorrectAnswerIndex ? "color: green;" : "")">@question.Options[i]</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для редактирования теста -->
+@if (showEditTestModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-lg" style="max-width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактировать тест: @SelectedTest.Name</h5>
+                    <button type="button" class="close" @onclick="CloseEditTestModal">&times;</button>
+                </div>
+                <div class="modal-body" style="overflow-x: auto;">
+                    <div class="form-group">
+                        <label>Название теста:</label>
+                        <InputText class="form-control" @bind-Value="SelectedTest.Name" />
+                    </div>
+                    <button class="btn btn-primary" @onclick="OpenAddQuestionModal">Добавить вопрос</button>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Вопрос</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var question in SelectedTest.Questions)
+                            {
+                                <tr @onclick="() => SelectQuestion(question)">
+                                    <td>@(SelectedTest.Questions.IndexOf(question) + 1)</td>
+                                    <td>@question.QuestionText</td>
+                                    <td>
+                                        <button class="btn btn-warning" @onclick="() => OpenEditQuestionModal(question)">Изменить</button>
+                                        <button class="btn btn-danger" @onclick="() => OpenDeleteQuestionModal(question)">Удалить</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <button class="btn btn-primary" @onclick="SaveTestChanges">Сохранить</button>
+                    <button class="btn btn-secondary" @onclick="CloseEditTestModal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для добавления/редактирования вопроса -->
+@if (showQuestionModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(IsEditingQuestion ? "Изменить вопрос" : "Добавить вопрос")</h5>
+                    <button type="button" class="close" @onclick="CloseQuestionModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Вопрос:</label>
+                        <InputText class="form-control" @bind-Value="CurrentQuestion.QuestionText" />
+                    </div>
+                    <div class="form-group">
+                        <label>Вариант 1:</label>
+                        <InputText class="form-control" @bind-Value="CurrentQuestion.Options[0]" />
+                    </div>
+                    <div class="form-group">
+                        <label>Вариант 2:</label>
+                        <InputText class="form-control" @bind-Value="CurrentQuestion.Options[1]" />
+                    </div>
+                    <div class="form-group">
+                        <label>Вариант 3:</label>
+                        <InputText class="form-control" @bind-Value="CurrentQuestion.Options[2]" />
+                    </div>
+                    <div class="form-group">
+                        <label>Вариант 4:</label>
+                        <InputText class="form-control" @bind-Value="CurrentQuestion.Options[3]" />
+                    </div>
+                    <div class="form-group">
+                        <label>Правильный ответ:</label>
+                        <select class="form-control" @bind="CurrentQuestion.CorrectAnswerIndex">
+                            <option value="0">Вариант 1</option>
+                            <option value="1">Вариант 2</option>
+                            <option value="2">Вариант 3</option>
+                            <option value="3">Вариант 4</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @onclick="SaveQuestion">Сохранить</button>
+                    <button class="btn btn-secondary" @onclick="CloseQuestionModal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно для удаления вопроса -->
+@if (showDeleteQuestionModal)
+{
+    <div class="modal" style="display: block; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Удалить вопрос</h5>
+                    <button type="button" class="close" @onclick="CloseDeleteQuestionModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить вопрос "@CurrentQuestion.QuestionText"?</p>
+                    <button class="btn btn-danger" @onclick="DeleteQuestion">Удалить</button>
+                    <button class="btn btn-secondary" @onclick="CloseDeleteQuestionModal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<TestModel> testsList = new List<TestModel>();
+    private TestModel SelectedTest { get; set; }
+    private TestModel newTest = new TestModel();
+    private bool showAddTestModal = false;
+    private bool showEditTestModal = false;
+    private bool showDeleteTestModal = false;
+    private bool showTestDetailsModal = false;
+    private bool showQuestionModal = false;
+    private bool showDeleteQuestionModal = false;
+    private bool IsEditingQuestion = false;
+    private QuestionModel CurrentQuestion = new QuestionModel();
+
+    private void SelectTest(TestModel test)
+    {
+        SelectedTest = test;
+    }
+
+    private void OpenAddTestModal()
+    {
+        showAddTestModal = true;
+    }
+
+    private void CloseAddTestModal()
+    {
+        showAddTestModal = false;
+        newTest = new TestModel();
+    }
+
+    private void AddTest()
+    {
+        testsList.Add(newTest);
+        CloseAddTestModal();
+    }
+
+    private void OpenEditTestModal()
+    {
+        showEditTestModal = true;
+    }
+
+    private void CloseEditTestModal()
+    {
+        showEditTestModal = false;
+    }
+
+    private void OpenDeleteTestModal()
+    {
+        showDeleteTestModal = true;
+    }
+
+    private void CloseDeleteTestModal()
+    {
+        showDeleteTestModal = false;
+    }
+
+    private void DeleteTest()
+    {
+        testsList.Remove(SelectedTest);
+        SelectedTest = null;
+        CloseDeleteTestModal();
+    }
+
+    private void OpenTestDetailsModal(TestModel test)
+    {
+        SelectedTest = test;
+        showTestDetailsModal = true;
+    }
+
+    private void CloseTestDetailsModal()
+    {
+        showTestDetailsModal = false;
+    }
+
+    private void OpenAddQuestionModal()
+    {
+        CurrentQuestion = new QuestionModel();
+        IsEditingQuestion = false;
+        showQuestionModal = true;
+    }
+
+    private void OpenEditQuestionModal(QuestionModel question)
+    {
+        CurrentQuestion = question;
+        IsEditingQuestion = true;
+        showQuestionModal = true;
+    }
+
+    private void CloseQuestionModal()
+    {
+        showQuestionModal = false;
+    }
+
+    private void SaveQuestion()
+    {
+        if (!IsEditingQuestion)
+        {
+            SelectedTest.Questions.Add(CurrentQuestion);
+        }
+        CloseQuestionModal();
+    }
+
+    private void SelectQuestion(QuestionModel question)
+    {
+        CurrentQuestion = question;
+    }
+
+    private void SaveTestChanges()
+    {
+        CloseEditTestModal();
+    }
+
+    private void OpenDeleteQuestionModal(QuestionModel question)
+    {
+        CurrentQuestion = question;
+        showDeleteQuestionModal = true;
+    }
+
+    private void CloseDeleteQuestionModal()
+    {
+        showDeleteQuestionModal = false;
+    }
+
+    private void DeleteQuestion()
+    {
+        if (SelectedTest != null && CurrentQuestion != null)
+        {
+            SelectedTest.Questions.Remove(CurrentQuestion);
+            CloseDeleteQuestionModal();
+        }
+    }
+}
