@@ -1,0 +1,41 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\sdahu\\OneDrive\\Рабочий стол\\папки с языками\\C#\\BlazorApp3\\BlazorApp3\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\BlazorApp3.bundle.scp.css",
+      "PackagePath": "staticwebassets\\BlazorApp3.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\sdahu\\OneDrive\\Рабочий стол\\папки с языками\\C#\\BlazorApp3\\BlazorApp3\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\sdahu\\OneDrive\\Рабочий стол\\папки с языками\\C#\\BlazorApp3\\BlazorApp3\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\sdahu\\OneDrive\\Рабочий стол\\папки с языками\\C#\\BlazorApp3\\BlazorApp3\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\sdahu\\OneDrive\\Рабочий стол\\папки с языками\\C#\\BlazorApp3\\BlazorApp3\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BlazorApp3.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.BlazorApp3.props",
+      "PackagePath": "build\\BlazorApp3.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BlazorApp3.props",
+      "PackagePath": "buildMultiTargeting\\BlazorApp3.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.BlazorApp3.props",
+      "PackagePath": "buildTransitive\\BlazorApp3.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

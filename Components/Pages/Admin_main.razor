@@ -1,0 +1,20 @@
+﻿@page "/admin_main"
+@inject NavigationManager Navigation
+
+<h3>Панель администратора</h3>
+<div class="admin-buttons">
+    <button class="btn btn-primary" @onclick="NavigateToStudents">Список студентов</button>
+    <button class="btn btn-primary" @onclick="NavigateToTests">Тесты</button>
+</div>
+
+@code {
+    private void NavigateToStudents()
+    {
+        Navigation.NavigateTo("/students");
+    }
+
+    private void NavigateToTests()
+    {
+        Navigation.NavigateTo("/tests");
+    }
+}
